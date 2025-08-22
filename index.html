@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>記憶宮殿システム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .description {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .app-link {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 20px 40px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .app-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .features {
+            margin-top: 60px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .emoji {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 記憶宮殿システム</h1>
+        <p class="description">
+            Google Mapを使って効果的な記憶術を実践しましょう。<br>
+            地図上に記憶アイテムを設置して、復習モードでテストできます。
+        </p>
+        
+        <a href="memory-palace-map.html" class="app-link">
+            🎯 アプリを開く
+        </a>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="emoji">📍</div>
+                <h3>地図上に設置</h3>
+                <p>Google Mapをクリックして記憶アイテムを配置</p>
+            </div>
+            
+            <div class="feature">
+                <div class="emoji">🔍</div>
+                <h3>検索機能</h3>
+                <p>タイトルや内容で記憶アイテムを素早く検索</p>
+            </div>
+            
+            <div class="feature">
+                <div class="emoji">🎓</div>
+                <h3>復習モード</h3>
+                <p>マーカーを隠して記憶力をテスト</p>
+            </div>
+            
+            <div class="feature">
+                <div class="emoji">💾</div>
+                <h3>データ管理</h3>
+                <p>データの書き出し・読み込み・自動保存</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
