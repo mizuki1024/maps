@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>記憶宮殿 - 地図版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 350px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #ddd;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            min-width: 200px;
+        }
+
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .btn.primary {
+            background-color: #FF4444;
+            font-weight: bold;
+        }
+
+        .btn.primary:hover {
+            background-color: #FF6666;
+        }
+
+        .btn.secondary {
+            background-color: #2196F3;
+        }
+
+        .btn.secondary:hover {
+            background-color: #1976D2;
+        }
+
+        .btn.danger {
+            background-color: #f44336;
+        }
+
+        .btn.danger:hover {
+            background-color: #d32f2f;
+        }
+
+        .memory-item {
+            background: white;
+            margin: 15px 0;
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .memory-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .memory-item.hidden {
+            opacity: 0.3;
+        }
+
+        .memory-item h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .memory-item p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .memory-item .meta {
+            color: #999;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .memory-item .delete-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.2s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .form-actions .btn {
+            margin: 0;
+            width: auto;
+            padding: 12px 24px;
+        }
+
+        .route-controls {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .status {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .sidebar h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .sidebar h3 {
+            color: #555;
+            margin: 20px 0 10px 0;
+            font-size: 16px;
+        }
+
+        .sidebar p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .stats {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0ea5e9;
+        }
+
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .checkbox-group {
+            margin: 15px 0;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>🧠 記憶宮殿</h2>
+            <p>地図上をクリックして記憶アイテムを設置し、効果的な記憶術を実践しましょう。</p>
+            
+            <div class="stats">
+                <div class="stats-item">
+                    <span>設置済みアイテム</span>
+                    <span id="itemCount">0個</span>
+                </div>
+            </div>
+            
+            <input type="text" class="search-box" id="searchBox" placeholder="記憶アイテムを検索...">
+            
+
+            <div>
+                <h3>🎯 設置した記憶アイテム</h3>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="reviewMode" onchange="toggleReviewMode()"> 
+                        復習モード（マーカーを隠す）
+                    </label>
+                </div>
+                <div id="memoryItems"></div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3>⚙️ データ管理</h3>
+                <button class="btn danger" onclick="clearAllMemories()">全て削除</button>
+                <button class="btn secondary" onclick="exportData()">データ書き出し</button>
+                <button class="btn secondary" onclick="importData()">データ読み込み</button>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div class="controls">
+                <h4 style="margin: 0 0 15px 0; color: #333;">🎯 地図をクリック</h4>
+                <button class="btn primary" onclick="openMemoryModal()">📍 記憶アイテムを設置</button>
+                <div style="margin: 10px 0; font-size: 13px; color: #666; text-align: center;">
+                    地図の任意の場所をクリックしてアイテムを設置
+                </div>
+                <button class="btn secondary" onclick="goToCurrentLocation()">📍 現在地</button>
+                <button class="btn" onclick="fitAllMarkers()">🔍 全体表示</button>
+            </div>
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- モーダルウィンドウ -->
+    <div id="memoryModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px; color: #333;">📝 記憶アイテムを設置</h3>
+            <form id="memoryForm">
+                <div class="form-group">
+                    <label for="memoryTitle">タイトル *</label>
+                    <input type="text" id="memoryTitle" required placeholder="覚えたい内容のタイトル">
+                </div>
+                <div class="form-group">
+                    <label for="memoryContent">詳細内容 *</label>
+                    <textarea id="memoryContent" required placeholder="詳細な内容や説明を入力してください"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="memoryCategory">カテゴリ（任意）</label>
+                    <input type="text" id="memoryCategory" placeholder="例: 歴史、語学、資格勉強">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn" onclick="closeModal()">キャンセル</button>
+                    <button type="submit" class="btn primary">🎯 設置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let map;
+        let currentPosition = { lat: 35.6762, lng: 139.6503 }; // 東京駅
+        let memoryItems = [];
+        let memoryMarkers = [];
+        let reviewMode = false;
+        let clickedPosition = null;
+
+        // 地図初期化
+        function initMap() {
+            console.log('Initializing map...');
+            
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+                center: currentPosition,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                styles: [
+                    {
+                        featureType: "poi",
+                        elementType: "labels",
+                        stylers: [{ visibility: "on" }]
+                    }
+                ]
+            });
+
+            // 地図クリックイベント
+            map.addListener('click', function(event) {
+                console.log('Map clicked:', event.latLng.lat(), event.latLng.lng());
+                clickedPosition = {
+                    lat: event.latLng.lat(),
+                    lng: event.latLng.lng()
+                };
+                openMemoryModal();
+            });
+
+
+            // データ読み込みと初期化
+            loadData();
+            updateMemoryList();
+            updateMarkers();
+            updateStats();
+            
+            console.log('Map initialized successfully');
+        }
+
+        // 記憶アイテムモーダルを開く
+        function openMemoryModal() {
+            console.log('Opening memory modal');
+            const modal = document.getElementById('memoryModal');
+            modal.style.display = 'block';
+            document.getElementById('memoryTitle').focus();
+            
+            // 現在位置を設定（クリック位置がない場合は地図中心）
+            if (!clickedPosition) {
+                const center = map.getCenter();
+                clickedPosition = {
+                    lat: center.lat(),
+                    lng: center.lng()
+                };
+            }
+        }
+
+        // モーダルを閉じる
+        function closeModal() {
+            document.getElementById('memoryModal').style.display = 'none';
+            document.getElementById('memoryForm').reset();
+            clickedPosition = null;
+        }
+
+        // 記憶アイテムフォーム送信
+        document.getElementById('memoryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('memoryTitle').value.trim();
+            const content = document.getElementById('memoryContent').value.trim();
+            const category = document.getElementById('memoryCategory').value.trim();
+            
+            if (clickedPosition && title && content) {
+                const memoryItem = {
+                    id: Date.now(),
+                    title: title,
+                    content: content,
+                    category: category || '未分類',
+                    position: clickedPosition,
+                    createdAt: new Date().toISOString(),
+                    lastReviewed: null
+                };
+                
+                memoryItems.push(memoryItem);
+                saveData();
+                updateMemoryList();
+                updateMarkers();
+                updateStats();
+                closeModal();
+                
+                console.log('Memory item created:', memoryItem);
+            }
+        });
+
+        // 記憶アイテムリスト更新
+        function updateMemoryList() {
+            const container = document.getElementById('memoryItems');
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            
+            container.innerHTML = '';
+            
+            const filteredItems = memoryItems.filter(item => 
+                item.title.toLowerCase().includes(searchTerm) || 
+                item.content.toLowerCase().includes(searchTerm) ||
+                item.category.toLowerCase().includes(searchTerm)
+            );
+            
+            filteredItems.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `memory-item ${reviewMode ? 'hidden' : ''}`;
+                div.innerHTML = `
+                    <h4>${item.title}</h4>
+                    <p>${item.content}</p>
+                    <div class="meta">
+                        <span>📂 ${item.category}</span>
+                        <span>
+                            <small>${new Date(item.createdAt).toLocaleDateString()}</small>
+                            <button class="delete-btn" onclick="deleteMemoryItem(${item.id})">削除</button>
+                        </span>
+                    </div>
+                `;
+                div.onclick = (e) => {
+                    if (e.target.className !== 'delete-btn') {
+                        goToMemoryItem(item);
+                    }
+                };
+                container.appendChild(div);
+            });
+            
+            if (filteredItems.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">記憶アイテムがありません</p>';
+            }
+        }
+
+        // 検索機能
+        document.getElementById('searchBox').addEventListener('input', updateMemoryList);
+
+        // 記憶アイテムの場所に移動
+        function goToMemoryItem(item) {
+            map.panTo(item.position);
+            map.setZoom(15);
+            
+            // マーカーをアニメーション
+            const marker = memoryMarkers.find(m => m.memoryId === item.id);
+            if (marker) {
+                marker.setAnimation(google.maps.Animation.BOUNCE);
+                setTimeout(() => marker.setAnimation(null), 2000);
+            }
+            
+            // 最後の復習日時を更新
+            item.lastReviewed = new Date().toISOString();
+            saveData();
+        }
+
+        // 記憶アイテム削除
+        function deleteMemoryItem(id) {
+            if (confirm('この記憶アイテムを削除しますか？')) {
+                memoryItems = memoryItems.filter(item => item.id !== id);
+                saveData();
+                updateMemoryList();
+                updateMarkers();
+                updateStats();
+            }
+        }
+
+        // マーカー更新
+        function updateMarkers() {
+            // 既存のマーカーを削除
+            memoryMarkers.forEach(marker => marker.setMap(null));
+            memoryMarkers = [];
+
+            if (reviewMode) return;
+
+            // 新しいマーカーを作成
+            memoryItems.forEach(item => {
+                const marker = new google.maps.Marker({
+                    position: item.position,
+                    map: map,
+                    title: item.title,
+                    animation: google.maps.Animation.DROP,
+                    icon: {
+                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                                <circle cx="16" cy="16" r="12" fill="#FF4444" stroke="white" stroke-width="3"/>
+                                <text x="16" y="20" text-anchor="middle" fill="white" font-size="16" font-weight="bold">🧠</text>
+                            </svg>
+                        `),
+                        scaledSize: new google.maps.Size(32, 32)
+                    }
+                });
+
+                // 情報ウィンドウ
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="max-width: 250px;">
+                            <h4 style="margin: 0 0 8px 0; color: #333;">${item.title}</h4>
+                            <p style="margin: 0 0 8px 0; color: #666;">${item.content}</p>
+                            <small style="color: #999;">📂 ${item.category} | 作成: ${new Date(item.createdAt).toLocaleDateString()}</small>
+                        </div>
+                    `
+                });
+
+                marker.addListener('click', function() {
+                    infoWindow.open(map, marker);
+                });
+
+                marker.memoryId = item.id;
+                memoryMarkers.push(marker);
+            });
+
+            console.log(`Updated ${memoryMarkers.length} markers`);
+        }
+
+        // 復習モード切り替え
+        function toggleReviewMode() {
+            reviewMode = document.getElementById('reviewMode').checked;
+            updateMarkers();
+            updateMemoryList();
+        }
+
+
+        // 統計更新
+        function updateStats() {
+            document.getElementById('itemCount').textContent = `${memoryItems.length}個`;
+        }
+
+        // ユーティリティ関数
+        function goToCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map.setCenter(pos);
+                    map.setZoom(15);
+                }, function() {
+                    alert('現在地の取得に失敗しました');
+                });
+            } else {
+                alert('このブラウザは位置情報に対応していません');
+            }
+        }
+
+        function fitAllMarkers() {
+            if (memoryMarkers.length === 0) {
+                alert('表示するマーカーがありません');
+                return;
+            }
+            
+            const bounds = new google.maps.LatLngBounds();
+            memoryItems.forEach(item => {
+                bounds.extend(item.position);
+            });
+            map.fitBounds(bounds);
+        }
+
+        // データ管理
+        function saveData() {
+            const data = {
+                memoryItems: memoryItems,
+                lastSaved: new Date().toISOString()
+            };
+            localStorage.setItem('memoryPalaceMapData', JSON.stringify(data));
+            console.log('Data saved');
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('memoryPalaceMapData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                memoryItems = data.memoryItems || [];
+                console.log('Data loaded:', memoryItems.length, 'items');
+            }
+        }
+
+        function clearAllMemories() {
+            if (confirm('全ての記憶アイテムを削除しますか？この操作は元に戻せません。')) {
+                memoryItems = [];
+                saveData();
+                updateMemoryList();
+                updateMarkers();
+                updateStats();
+                alert('全てのデータを削除しました');
+            }
+        }
+
+        function exportData() {
+            const data = {
+                memoryItems: memoryItems,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `memory-palace-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (data.memoryItems) {
+                                memoryItems = data.memoryItems;
+                                saveData();
+                                updateMemoryList();
+                                updateMarkers();
+                                updateStats();
+                                alert(`${data.memoryItems.length}個のアイテムを読み込みました`);
+                            } else {
+                                alert('無効なデータファイルです');
+                            }
+                        } catch (error) {
+                            alert('ファイルの読み込みに失敗しました: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        // モーダル外クリックで閉じる
+        window.onclick = function(event) {
+            const modal = document.getElementById('memoryModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+
+    <!-- Google Maps API -->
+    <script>
+        function loadGoogleMapsAPI() {
+            const script = document.createElement('script');
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDYFco4HalCa1EwaRINCohlLZp5GTY-flg&loading=async&callback=initMap';
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadGoogleMapsAPI);
+        } else {
+            loadGoogleMapsAPI();
+        }
+    </script>
+</body>
+</html>
